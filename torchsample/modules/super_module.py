@@ -20,7 +20,10 @@ from ..regularizers import RegularizerModule
 
 class SuperModule(nn.Module):
 
-    def __init__(self):
+    def __init__(self, 
+                 plot=False, 
+                 module=None, 
+                 use_gpu=torch.cuda.is_available()):
         """
         SuperModule for high-level training of Pytorch models
 
@@ -29,6 +32,10 @@ class SuperModule(nn.Module):
                 - e.g. for validation accuracy instead of loss
         """
         super(SuperModule, self).__init__()
+        
+        self.plot = plot
+        self._module = module
+        self._use_gpu = use_gpu
 
         self.history = History()
         self._callbacks = [self.history]
@@ -41,7 +48,11 @@ class SuperModule(nn.Module):
         Defines the computation performed at every call.
         Should be overriden by all subclasses.
         """
-        raise NotImplementedError('Subclass must implement this method')
+        if self._module:
+          return self._module(*input)
+        else:
+          raise NotImplementedError('Must wrap existing module OR \
+          subclass must implement this method')
 
     def set_loss(self, loss):
         self._loss = loss
